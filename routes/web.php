@@ -16,5 +16,6 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
-    $router->get('encrypted_password/{id}', ['uses' => 'UtilController@encrypted_password']);
+    $router->post('encryption', ['uses' => 'UtilController@encryption']);
+    $router->post('convert_listloader', ['uses' => 'UtilController@convert_listloader']);
 });
