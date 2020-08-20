@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\HashUtil;
+use App\Libraries\JiraApiUtil;
 use Illuminate\Http\Request;
 
 class UtilController extends Controller {
@@ -49,8 +50,14 @@ class UtilController extends Controller {
     }
 
     public function get_jira_issue(Request $request) {
-        //TODO
-        return response()->json('test', 200);
+        $json_list = array();
+
+        $util      = new JiraApiUtil();
+        $task_list = $util->get_task_list($request->sprint_id);
+        foreach ($task_list as $task) {
+            $json_list[] = $task;
+        }
+        return response()->json($json_list, 200);
     }
 
 }
