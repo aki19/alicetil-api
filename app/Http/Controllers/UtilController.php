@@ -48,4 +48,9 @@ class UtilController extends Controller {
         return response()->json(array(implode("\n", $json_list)), 200);
     }
 
+    public function get_jira_issue(Request $request) {
+        //TODO
+        return response()->json('test', 200);
+    }
+
 }

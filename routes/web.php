@@ -18,4 +18,5 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('encryption', ['uses' => 'UtilController@encryption']);
     $router->post('convert_listloader', ['uses' => 'UtilController@convert_listloader']);
+    $router->post('get_jira_issue', ['uses' => 'UtilController@get_jira_issue']);
 });
