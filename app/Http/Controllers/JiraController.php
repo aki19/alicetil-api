@@ -17,8 +17,14 @@ class JiraController extends Controller {
     }
 
     public function get_sprint_list() {
-        $util = new JiraApiUtil();
-        return response()->json($util->get_sprint_list(), 200);
+        $json_list = array();
+
+        $util        = new JiraApiUtil();
+        $sprint_list = $util->get_sprint_list();
+        foreach ($sprint_list as $key => $val) {
+            $json_list[] = array("id" => $key, "name" => $val);
+        }
+        return response()->json($json_list, 200);
     }
 
     public function get_issue_list(Request $request) {
