@@ -78,9 +78,9 @@ $app->middleware([
  App\Http\Middleware\CorsMiddleware::class
 ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+ 'ip' => App\Http\Middleware\IpMiddleware::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
