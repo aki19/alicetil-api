@@ -26,7 +26,7 @@ class IpMiddleware {
         }
 
         if (!IpUtils::checkIp($request->ip(), explode(",", $ips))) {
-            throw new AccessDeniedHttpException('IPNotAllowed');
+            throw new AccessDeniedHttpException('IPNotAllowed'.$request->ip());
         }
 
         return $next($request);
