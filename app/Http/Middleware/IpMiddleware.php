@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -20,13 +19,9 @@ class IpMiddleware {
             return $next($request);
         }
 
-        $ips = env("WHITE_LIST");
-        if (empty($ips)) {
-            return $next($request);
-        }
-
-        if (!IpUtils::checkIp($request->ip(), explode(",", $ips))) {
-            throw new AccessDeniedHttpException('IPNotAllowed'.$request->ip());
+        $request::setTrustedProxies(array($request->ip()), $request::HEADER_X_FORWARDED_ALL);
+        if (!IpUtils::checkIp($request->ip(), explode(",", env("WHITE_LIST", "")))) {
+            throw new AccessDeniedHttpException('IPNotAllowed' . $request->ip());
         }
 
         return $next($request);
