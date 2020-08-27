@@ -34,6 +34,12 @@ class JiraController extends Controller {
         $task_list = $util->get_task_list($request->sprint_id);
         foreach ($task_list as $task) {
             $json_list[] = $task;
+            if (isset($task["subtasks"])) {
+                foreach ($task["subtasks"] as $subtask) {
+                    $subtask["name"] = "→ " . $subtask["name"];
+                    $json_list[]     = $subtask;
+                }
+            }
         }
         return response()->json($json_list, 200);
     }
