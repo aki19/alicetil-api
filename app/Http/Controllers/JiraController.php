@@ -41,6 +41,12 @@ class JiraController extends Controller {
                 }
             }
         }
+
+        $sort = array();
+        foreach ($json_list as $key => $value) {
+            $sort[$key] = isset($value['parent_key']) ? $value['parent_key'] : 0;
+        }
+        array_multisort($sort, SORT_ASC, $json_list);
         return response()->json($json_list, 200);
     }
 

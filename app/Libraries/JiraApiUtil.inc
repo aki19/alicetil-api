@@ -74,7 +74,7 @@ class JiraApiUtil {
                         $parent        = $fields["parent"];
                         $parent_fields = $parent["fields"];
 
-                        $issue["parent_key"]  = $parent_fields["key"];
+                        $issue["parent_key"]  = $parent["key"];
                         $issue["parent_name"] = $parent_fields["summary"];
                     }
                     $task_list[$data["key"]] = $issue;
@@ -105,12 +105,7 @@ class JiraApiUtil {
             }
         }
 
-        $sort = array();
-        foreach ($task_list as $key => $value) {
-            $sort[$key] = isset($value['parent_key']) ? $value['parent_key'] : 0;
-        }
-
-        return array_multisort($sort, SORT_ASC, $task_list);
+        return $task_list;
     }
 
 }
