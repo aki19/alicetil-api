@@ -70,6 +70,12 @@ class JiraApiUtil {
                     } else {
                         $issue["person"] = "未割当";
                     }
+                    if (isset($fields["parent"])) {
+                        $parent        = $fields["parent"];
+                        $parent_fields = $parent["fields"];
+
+                        $issue["parent_name"] = $parent_fields["summary"];
+                    }
                     $task_list[$data["key"]] = $issue;
 
                     if (isset($fields["subtasks"])) {
