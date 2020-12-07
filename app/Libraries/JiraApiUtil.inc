@@ -26,7 +26,7 @@ class JiraApiUtil {
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
-        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/1/sprint", $parameters, true, true, $headers);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/5/sprint", $parameters, true, true, $headers);
         if ($status_code == "200") {
             $datas = $response["values"];
             if (count($datas) > 0) {
@@ -52,7 +52,7 @@ class JiraApiUtil {
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
-        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/1/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/5/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
         if ($status_code == "200") {
             $datas = $response["issues"];
             if (count($datas) > 0) {
