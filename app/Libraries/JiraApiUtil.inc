@@ -107,7 +107,7 @@ class JiraApiUtil {
 
         $sort = array();
         foreach ($task_list as $key => $value) {
-            $sort[$key] = $value['parent_key'];
+            $sort[$key] = isset($value['parent_key']) ? $value['parent_key'] : 0;
         }
 
         return array_multisort($sort, SORT_ASC, $task_list);
