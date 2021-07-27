@@ -115,7 +115,7 @@ class JiraApiUtil {
         $parameters               = array();
         $parameters["fields"]     = "summary";
         $parameters["maxResults"] = 100;
-        $parameters["jql"]        = "parent={$epic_key} %26 statusCategory in (2, 4) %26 project=CBTS";//リリース完了以外
+        $parameters["jql"]        = "parent={$epic_key} and statusCategory in (2, 4) and project=CBTS";//リリース完了以外
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
