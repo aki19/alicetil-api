@@ -59,7 +59,7 @@ class JiraController extends Controller {
             $json_list[] = $task;
         }
 
-        ksort($json_list);
+        asort($json_list);
         return response()->json($json_list, 200);
     }
 
