@@ -50,4 +50,17 @@ class JiraController extends Controller {
         return response()->json($json_list, 200);
     }
 
+    public function get_epic_issue_list(Request $request) {
+        $json_list = array();
+
+        $util      = new JiraApiUtil();
+        $task_list = $util->get_epic_task_list($request->epic_key);
+        foreach ($task_list as $task) {
+            $json_list[] = $task;
+        }
+
+        ksort($json_list);
+        return response()->json($json_list, 200);
+    }
+
 }

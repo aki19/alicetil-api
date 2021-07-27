@@ -7,6 +7,7 @@ define("__JIRA_PROJECT_URL", env("JIRA_PROJECT_URL"));
 
 //JiraAPI
 define("__JIRA_SOFTWARE_CLOUD_REST_API", "rest/agile/latest/");
+define("__JIRA_CLOUD_PLATFORM_REST_API", "rest/api/latest/");
 define("__JIRA_LOGIN_ID", env("JIRA_LOGIN_ID"));
 define("__JIRA_API_TOKEN", env("JIRA_API_TOKEN"));
 
@@ -101,6 +102,34 @@ class JiraApiUtil {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        return $task_list;
+    }
+
+    public function get_epic_task_list($epic_key) {
+        $task_list = array();
+
+        $parameters               = array();
+        $parameters["fields"]     = "summary";
+        $parameters["maxResults"] = 100;
+        $parameters["jql"]        = "parent={$epic_key} %26 statusCategory in (2, 4) %26 project=CBTS";//リリース完了以外
+
+        $headers   = array();
+        $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_CLOUD_PLATFORM_REST_API . "search", $parameters, true, true, $headers);
+        if ($status_code == "200") {
+            $datas = $response["issues"];
+            if (count($datas) > 0) {
+                foreach ($datas as $data) {
+                    $fields = $data["fields"];
+
+                    $issue                   = array();
+                    $issue["key"]            = $data["key"];
+                    $issue["name"]           = $fields["summary"];
+                    $task_list[$data["key"]] = $issue;
                 }
             }
         }
