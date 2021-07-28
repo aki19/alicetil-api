@@ -66,10 +66,18 @@ class JiraController extends Controller {
 
         $util      = new JiraApiUtil();
         $task_list = $util->get_active_issue_list($request->assignee);
-        foreach ($task_list as $task) {
-            $json_list[] = $task;
+        if ($request->json_decode) {
+            foreach ($task_list as $task) {
+                $json_list[] = $task;
+            }
+            return response()->json($json_list, 200);
+        } else {
+            foreach ($task_list as $task) {
+                $json_list[] = $task["key"] . "：" . $task["name"];
+            }
+            return response(implode(PHP_EOL, $json_list));
         }
-        return response()->json($json_list, 200);
+
     }
 
 }
