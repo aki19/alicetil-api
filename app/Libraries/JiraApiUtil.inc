@@ -10,6 +10,7 @@ define("__JIRA_SOFTWARE_CLOUD_REST_API", "rest/agile/latest/");
 define("__JIRA_CLOUD_PLATFORM_REST_API", "rest/api/latest/");
 define("__JIRA_LOGIN_ID", env("JIRA_LOGIN_ID"));
 define("__JIRA_API_TOKEN", env("JIRA_API_TOKEN"));
+define("__JIRA_CBTS_BOARD_ID", "5");
 
 class JiraApiUtil {
 
@@ -19,20 +20,22 @@ class JiraApiUtil {
         $this->api_url = $api_url;
     }
 
-    public function get_sprint_list($initial_option = false) {
+    public function get_sprint_list($initial_option = false, $state = "active,future") {
         $sprint_list = array();
 
         $parameters          = array();
-        $parameters["state"] = "active,future";
+        $parameters["state"] = $state;
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
-        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/5/sprint", $parameters, true, true, $headers);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/" . __JIRA_CBTS_BOARD_ID . "/sprint", $parameters, true, true, $headers);
         if ($status_code == "200") {
             $datas = $response["values"];
             if (count($datas) > 0) {
                 foreach ($datas as $data) {
-                    $sprint_list[$data["id"]] = $data["name"];
+                    if (isset($data["originBoardId"]) && $data["originBoardId"] == __JIRA_CBTS_BOARD_ID) {
+                        $sprint_list[$data["id"]] = $data["name"];
+                    }
                 }
             }
         }
@@ -44,7 +47,7 @@ class JiraApiUtil {
         }
     }
 
-    public function get_task_list($sprint_id) {
+    public function get_sprint_issue_list($sprint_id) {
         $task_list = array();
 
         $parameters               = array();
@@ -53,7 +56,7 @@ class JiraApiUtil {
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
-        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/5/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/" . __JIRA_CBTS_BOARD_ID . "/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
         if ($status_code == "200") {
             $datas = $response["issues"];
             if (count($datas) > 0) {
@@ -109,17 +112,56 @@ class JiraApiUtil {
         return $task_list;
     }
 
-    public function get_epic_task_list($epic_key) {
+    public function get_child_issue_list($parent_key) {
         $task_list = array();
 
         $parameters               = array();
         $parameters["fields"]     = "summary";
         $parameters["maxResults"] = 100;
-        $parameters["jql"]        = "parent={$epic_key} and statusCategory in (2, 4) and project=CBTS order by key";//リリース完了以外
+        $parameters["jql"]        = "parent={$parent_key} and statusCategory in (2, 4) and project=CBTS order by key";//リリース完了以外
 
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
         list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_CLOUD_PLATFORM_REST_API . "search", $parameters, true, true, $headers);
+        if ($status_code == "200") {
+            $datas = $response["issues"];
+            if (count($datas) > 0) {
+                foreach ($datas as $data) {
+                    $fields = $data["fields"];
+
+                    $issue                   = array();
+                    $issue["key"]            = $data["key"];
+                    $issue["name"]           = $fields["summary"];
+                    $task_list[$data["key"]] = $issue;
+                }
+            }
+        }
+
+        return $task_list;
+    }
+
+    public function get_active_issue_list($assignee) {
+        $task_list = array();
+
+        //activeなsprint_idの取得
+        $sprint_list = $this->get_sprint_list(false, "active");
+        $sprint_id   = 0;
+        if (count($sprint_list)) {
+            $sprint_id = array_key_first($sprint_list);
+        }
+
+        $parameters               = array();
+        $parameters["fields"]     = "summary";
+        $parameters["maxResults"] = 100;
+        $jql                      = "";
+        if ($assignee) {
+            $jql = "assignee = '{$assignee}' ";
+        }
+        $parameters["jql"] = $jql . "order by key";
+
+        $headers   = array();
+        $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/" . __JIRA_CBTS_BOARD_ID . "/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
         if ($status_code == "200") {
             $datas = $response["issues"];
             if (count($datas) > 0) {

@@ -27,11 +27,11 @@ class JiraController extends Controller {
         return response()->json($json_list, 200);
     }
 
-    public function get_issue_list(Request $request) {
+    public function get_sprint_issue_list(Request $request) {
         $json_list = array();
 
         $util      = new JiraApiUtil();
-        $task_list = $util->get_task_list($request->sprint_id);
+        $task_list = $util->get_sprint_issue_list($request->sprint_id);
         foreach ($task_list as $task) {
             $json_list[] = $task;
             if (isset($task["subtasks"])) {
@@ -50,11 +50,22 @@ class JiraController extends Controller {
         return response()->json($json_list, 200);
     }
 
-    public function get_epic_issue_list(Request $request) {
+    public function get_child_issue_list(Request $request) {
         $json_list = array();
 
         $util      = new JiraApiUtil();
-        $task_list = $util->get_epic_task_list($request->epic_key);
+        $task_list = $util->get_child_issue_list($request->parent_key);
+        foreach ($task_list as $task) {
+            $json_list[] = $task;
+        }
+        return response()->json($json_list, 200);
+    }
+
+    public function get_active_issue_list(Request $request) {
+        $json_list = array();
+
+        $util      = new JiraApiUtil();
+        $task_list = $util->get_active_issue_list($request->assignee);
         foreach ($task_list as $task) {
             $json_list[] = $task;
         }

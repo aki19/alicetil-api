@@ -22,6 +22,7 @@ $router->group(['prefix' => 'api', 'middleware' => ['ip']], function () use ($ro
 
 $router->group(['prefix' => 'api/jira', 'middleware' => ['ip']], function () use ($router) {
     $router->get('get_sprint_list', ['uses' => 'JiraController@get_sprint_list']);
-    $router->post('get_issue_list', ['uses' => 'JiraController@get_issue_list']);
-    $router->post('get_epic_issue_list', ['uses' => 'JiraController@get_epic_issue_list']);
+    $router->post('get_sprint_issue_list', ['uses' => 'JiraController@get_sprint_issue_list']);
+    $router->post('get_child_issue_list', ['uses' => 'JiraController@get_child_issue_list']);
+    $router->post('get_active_issue_list', ['uses' => 'JiraController@get_active_issue_list']);
 });
