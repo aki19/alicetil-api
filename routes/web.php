@@ -25,4 +25,5 @@ $router->group(['prefix' => 'api/jira', 'middleware' => ['ip']], function () use
     $router->post('get_sprint_issue_list', ['uses' => 'JiraController@get_sprint_issue_list']);
     $router->post('get_child_issue_list', ['uses' => 'JiraController@get_child_issue_list']);
     $router->post('get_active_issue_list', ['uses' => 'JiraController@get_active_issue_list']);
+    $router->post('get_target_issue_list', ['uses' => 'JiraController@get_target_issue_list']);
 });

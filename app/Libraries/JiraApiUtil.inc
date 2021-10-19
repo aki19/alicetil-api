@@ -10,6 +10,7 @@ define("__JIRA_SOFTWARE_CLOUD_REST_API", "rest/agile/latest/");
 define("__JIRA_CLOUD_PLATFORM_REST_API", "rest/api/latest/");
 define("__JIRA_LOGIN_ID", env("JIRA_LOGIN_ID"));
 define("__JIRA_API_TOKEN", env("JIRA_API_TOKEN"));
+define("__JIRA_CBTS_OLD_BOARD_ID", "1");
 define("__JIRA_CBTS_BOARD_ID", "5");
 
 class JiraApiUtil {
@@ -20,8 +21,31 @@ class JiraApiUtil {
         $this->api_url = $api_url;
     }
 
-    public function get_sprint_list($initial_option = false, $state = "active,future") {
+    public function get_sprint_list($state = "active,future") {
         $sprint_list = array();
+
+        $parameters          = array();
+        $parameters["state"] = $state;
+
+        $headers   = array();
+        $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/" . __JIRA_CBTS_OLD_BOARD_ID . "/sprint", $parameters, true, true, $headers);
+        if ($status_code == "200") {
+            $datas = $response["values"];
+            if (count($datas) > 0) {
+                foreach ($datas as $data) {
+                    if (isset($data["originBoardId"]) && $data["originBoardId"] == __JIRA_CBTS_OLD_BOARD_ID) {
+                        if ($data["name"] != "タスク移行しました。") {
+                            $data_properties            = array();
+                            $data_properties["name"]    = $data["name"];
+                            $data_properties["endDate"] = date("Y-m-d", strtotime($data["endDate"]));
+                            $data_properties["state"]   = $data["state"];
+                            $sprint_list[$data["id"]]   = $data_properties;
+                        }
+                    }
+                }
+            }
+        }
 
         $parameters          = array();
         $parameters["state"] = $state;
@@ -34,17 +58,28 @@ class JiraApiUtil {
             if (count($datas) > 0) {
                 foreach ($datas as $data) {
                     if (isset($data["originBoardId"]) && $data["originBoardId"] == __JIRA_CBTS_BOARD_ID) {
-                        $sprint_list[$data["id"]] = $data["name"];
+                        $data_properties            = array();
+                        $data_properties["name"]    = $data["name"];
+                        $data_properties["endDate"] = date("Y-m-d", strtotime($data["endDate"]));
+                        $data_properties["state"]   = $data["state"];
+                        $sprint_list[$data["id"]]   = $data_properties;
                     }
                 }
             }
         }
 
-        if ($initial_option) {
-            return array(__PULLDOWN_INITIAL_OPTION) + $sprint_list;
-        } else {
-            return $sprint_list;
-        }
+        uasort($sprint_list, function ($x, $y) {
+            $key = 'endDate';
+            if ($x[$key] == $y[$key]) {
+                return 0;
+            } else if ($x[$key] < $y[$key]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        return $sprint_list;
     }
 
     public function get_sprint_issue_list($sprint_id) {
@@ -144,7 +179,7 @@ class JiraApiUtil {
         $task_list = array();
 
         //activeなsprint_idの取得
-        $sprint_list = $this->get_sprint_list(false, "active");
+        $sprint_list = $this->get_sprint_list("active");
         $sprint_id   = 0;
         if (count($sprint_list)) {
             $sprint_id = array_key_first($sprint_list);
@@ -172,6 +207,57 @@ class JiraApiUtil {
                     $issue["key"]            = $data["key"];
                     $issue["name"]           = $fields["summary"];
                     $task_list[$data["key"]] = $issue;
+                }
+            }
+        }
+
+        return $task_list;
+    }
+
+    public function get_sprint($sprint_id) {
+        $headers   = array();
+        $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+        list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "sprint/{$sprint_id}", array(), true, true, $headers);
+        if ($status_code == "200") {
+            return $response;
+        }
+        return false;
+    }
+
+    public function get_target_issue_list($sprint_id) {
+        $task_list = array();
+
+        if ($sprint = $this->get_sprint($sprint_id)) {
+            $board_id = $sprint["originBoardId"];
+
+            $parameters               = array();
+            $parameters["fields"]     = "summary";
+            $parameters["maxResults"] = 100;
+            $jql                      = "";
+            if ($board_id == __JIRA_CBTS_OLD_BOARD_ID) {
+                $jql .= " issuetype = Story";
+            } else if ($board_id == __JIRA_CBTS_BOARD_ID) {
+                $jql .= " issuetype = ストーリー";
+                $jql .= " AND parent in ('CBTS-168','CBTS-279')";
+            }
+            $parameters["jql"] = $jql . " order by key";
+
+            $headers   = array();
+            $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+            list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_SOFTWARE_CLOUD_REST_API . "board/" . $board_id . "/sprint/{$sprint_id}/issue", $parameters, true, true, $headers);
+            if ($status_code == "200") {
+                $datas = $response["issues"];
+                if (count($datas) > 0) {
+                    foreach ($datas as $data) {
+                        $fields = $data["fields"];
+
+                        if (strpos($fields["summary"], "【棄却】") === FALSE) {
+                            $issue                   = array();
+                            $issue["key"]            = $data["key"];
+                            $issue["name"]           = $fields["summary"];
+                            $task_list[$data["key"]] = $issue;
+                        }
+                    }
                 }
             }
         }

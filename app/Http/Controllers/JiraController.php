@@ -16,13 +16,25 @@ class JiraController extends Controller {
         //
     }
 
-    public function get_sprint_list() {
+    public function get_sprint_list(Request $request) {
         $json_list = array();
 
+        $state = "active,future";
+        if ($request->input("release")) {
+            $state = "closed,active";
+        }
+
         $util        = new JiraApiUtil();
-        $sprint_list = $util->get_sprint_list();
-        foreach ($sprint_list as $key => $val) {
-            $json_list[] = array("id" => $key, "name" => $val);
+        $sprint_list = $util->get_sprint_list($state);
+
+        if ($request->input("release")) {
+            foreach ($sprint_list as $key => $val) {
+                $json_list[] = array("id" => $key, "name" => $val["endDate"], "state" => $val["state"]);
+            }
+        } else {
+            foreach ($sprint_list as $key => $val) {
+                $json_list[] = array("id" => $key, "name" => $val["name"]);
+            }
         }
         return response()->json($json_list, 200);
     }
@@ -66,6 +78,25 @@ class JiraController extends Controller {
 
         $util      = new JiraApiUtil();
         $task_list = $util->get_active_issue_list($request->assignee);
+        if ($request->json_decode) {
+            foreach ($task_list as $task) {
+                $json_list[] = $task;
+            }
+            return response()->json($json_list, 200);
+        } else {
+            foreach ($task_list as $task) {
+                $json_list[] = $task["key"] . "：" . $task["name"];
+            }
+            return response(implode(PHP_EOL, $json_list));
+        }
+
+    }
+
+    public function get_target_issue_list(Request $request) {
+        $json_list = array();
+
+        $util      = new JiraApiUtil();
+        $task_list = $util->get_target_issue_list($request->sprint_id);
         if ($request->json_decode) {
             foreach ($task_list as $task) {
                 $json_list[] = $task;
