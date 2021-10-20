@@ -111,4 +111,28 @@ class JiraController extends Controller {
 
     }
 
+    public function get_timeline_list() {
+        $util        = new JiraApiUtil();
+        $sprint_list = $util->get_sprint_list("closed,active");
+
+        uasort($sprint_list, function ($x, $y) {
+            $key = 'endDate';
+            if ($x[$key] == $y[$key]) {
+                return 0;
+            } else if ($x[$key] > $y[$key]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        $json_list = array();
+        foreach ($sprint_list as $key => $val) {
+            $task_list   = $util->get_target_issue_list($key);
+            $json_list[] = array("id" => $key, "name" => $val["endDate"], "state" => $val["state"], "issues" => $task_list);
+        }
+
+        return response()->json($json_list, 200);
+    }
+
 }
