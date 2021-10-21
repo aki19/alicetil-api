@@ -105,8 +105,7 @@ class JiraController extends Controller {
 
     public function get_timeline_list() {
         $util      = new JiraApiUtil();
-        $json_list = $this->get_timeline_list_by_board(__JIRA_CBTS_BOARD_ID);
-        $json_list += $this->get_timeline_list_by_board(__JIRA_CBTS_OLD_BOARD_ID);
+        $json_list = array_merge($this->get_timeline_list_by_board(__JIRA_CBTS_BOARD_ID), $this->get_timeline_list_by_board(__JIRA_CBTS_OLD_BOARD_ID));
         return response()->json($json_list, 200);
     }
 
