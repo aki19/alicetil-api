@@ -25,7 +25,18 @@ class JiraController extends Controller {
         }
 
         $util        = new JiraApiUtil();
-        $sprint_list = $util->get_sprint_list($state);
+        $sprint_list = $util->get_sprint_list(__JIRA_CBTS_BOARD_ID, $state);
+
+        uasort($sprint_list, function ($x, $y) {
+            $key = 'endDate';
+            if ($x[$key] == $y[$key]) {
+                return 0;
+            } else if ($x[$key] < $y[$key]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
 
         if ($request->input("release")) {
             foreach ($sprint_list as $key => $val) {
@@ -92,28 +103,16 @@ class JiraController extends Controller {
 
     }
 
-    public function get_target_issue_list(Request $request) {
-        $json_list = array();
-
+    public function get_timeline_list() {
         $util      = new JiraApiUtil();
-        $task_list = $util->get_target_issue_list($request->sprint_id);
-        if ($request->json_decode) {
-            foreach ($task_list as $task) {
-                $json_list[] = $task;
-            }
-            return response()->json($json_list, 200);
-        } else {
-            foreach ($task_list as $task) {
-                $json_list[] = $task["key"] . "：" . $task["name"];
-            }
-            return response(implode(PHP_EOL, $json_list));
-        }
-
+        $json_list = $this->get_timeline_list_by_board(__JIRA_CBTS_BOARD_ID);
+        $json_list += $this->get_timeline_list_by_board(__JIRA_CBTS_OLD_BOARD_ID);
+        return response()->json($json_list, 200);
     }
 
-    public function get_timeline_list() {
+    private function get_timeline_list_by_board($board_id) {
         $util        = new JiraApiUtil();
-        $sprint_list = $util->get_sprint_list("closed,active");
+        $sprint_list = $util->get_sprint_list($board_id, "closed,active");
 
         uasort($sprint_list, function ($x, $y) {
             $key = 'endDate';
@@ -126,13 +125,20 @@ class JiraController extends Controller {
             }
         });
 
-        $json_list = array();
-        foreach ($sprint_list as $key => $val) {
-            $task_list   = $util->get_target_issue_list($key);
-            $json_list[] = array("id" => $key, "name" => $val["endDate"], "state" => $val["state"], "issues" => $task_list);
+        $sprint_task_list = array();
+        foreach ($util->get_target_issue_list($board_id, array_keys($sprint_list)) as $key => $val) {
+            $sprint_task_list[$val["sprint_id"]][$key] = $val;
         }
 
-        return response()->json($json_list, 200);
+        $timeline_list = array();
+        foreach ($sprint_list as $key => $val) {
+            $task_list = array();
+            if (isset($sprint_task_list[$key])) {
+                $task_list = $sprint_task_list[$key];
+            }
+            $timeline_list[] = array("id" => $key, "name" => $val["endDate"], "state" => $val["state"], "issues" => $task_list);
+        }
+        return $timeline_list;
     }
 
 }
