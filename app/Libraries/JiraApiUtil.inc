@@ -193,12 +193,9 @@ class JiraApiUtil {
     }
 
     public function get_target_issue_list($board_id, $sprint_ids) {
-        $task_list = array();
-
-        $parameters               = array();
-        $parameters["fields"]     = "summary,customfield_10020";
-        $parameters["maxResults"] = 300;
-        $jql                      = "sprint in ( " . join(",", $sprint_ids) . " )";
+        $parameters           = array();
+        $parameters["fields"] = "summary";
+        $jql                  = "sprint in ( " . join(",", $sprint_ids) . " )";
         if ($board_id == __JIRA_CBTS_OLD_BOARD_ID) {
             $jql .= " AND issuetype = Story";
         } else if ($board_id == __JIRA_CBTS_BOARD_ID) {
@@ -210,20 +207,41 @@ class JiraApiUtil {
         $headers   = array();
         $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
         list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_CLOUD_PLATFORM_REST_API . "search", $parameters, true, true, $headers);
+        $total = 0;
         if ($status_code == "200") {
-            $datas = $response["issues"];
-            if (count($datas) > 0) {
-                foreach ($datas as $data) {
-                    $fields = $data["fields"];
+            $total = $response["total"];
+        }
 
-                    if (strpos($fields["summary"], "【棄却】") === FALSE) {
-                        $issue                   = array();
-                        $issue["key"]            = $data["key"];
-                        $issue["name"]           = $fields["summary"];
-                        $issue["sprint_id"]      = isset($fields["customfield_10020"][0]["id"]) ? $fields["customfield_10020"][0]["id"] : 0;
-                        $task_list[$data["key"]] = $issue;
+        $task_list = array();
+        if ($total) {
+            $parameters["maxResults"] = 100;
+            $parameters["fields"]     = "summary,customfield_10020";
+            $startAt                  = 0;
+            while ($total > 0) {
+                $parameters["startAt"] = $startAt;
+
+                $headers   = array();
+                $headers[] = "Authorization: Basic " . base64_encode(__JIRA_LOGIN_ID . ":" . __JIRA_API_TOKEN);
+                list($status_code, $response) = WebAPI::direct_get($this->api_url . __JIRA_CLOUD_PLATFORM_REST_API . "search", $parameters, true, true, $headers);
+                if ($status_code == "200") {
+                    $datas = $response["issues"];
+                    if (count($datas) > 0) {
+                        foreach ($datas as $data) {
+                            $fields = $data["fields"];
+
+                            if (strpos($fields["summary"], "【棄却】") === FALSE) {
+                                $issue                   = array();
+                                $issue["key"]            = $data["key"];
+                                $issue["name"]           = $fields["summary"];
+                                $issue["sprint_id"]      = isset($fields["customfield_10020"][0]["id"]) ? $fields["customfield_10020"][0]["id"] : 0;
+                                $task_list[$data["key"]] = $issue;
+                            }
+                        }
                     }
                 }
+
+                $total   -= 100;
+                $startAt = 100;
             }
         }
 
