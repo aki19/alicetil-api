@@ -147,7 +147,7 @@ class JiraApiUtil {
         $task_list = array();
 
         //activeなsprint_idの取得
-        $sprint_list = $this->get_sprint_list("active");
+        $sprint_list = $this->get_sprint_list(__JIRA_CBTS_BOARD_ID, "active");
         $sprint_id   = 0;
         if (count($sprint_list)) {
             $sprint_id = array_key_first($sprint_list);
