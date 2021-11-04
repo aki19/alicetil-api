@@ -200,7 +200,7 @@ class JiraApiUtil {
             $jql .= " AND issuetype = Story";
         } else if ($board_id == __JIRA_CBTS_BOARD_ID) {
             $jql .= " AND issuetype = ストーリー";
-            $jql .= " AND parent in ('CBTS-168','CBTS-279')";
+            $jql .= " AND parent in ('CBTS-168','CBTS-2296','CBTS-279')";
         }
         $parameters["jql"] = $jql . " order by key";
 
