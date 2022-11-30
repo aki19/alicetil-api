@@ -4,7 +4,7 @@
 #RUN cd /app
 #RUN npm ci && npm run prod
 
-FROM php:8.1.5-apache
+FROM php:7.2-apache
 
 RUN apt-get update && apt-get install -y \
   zip \
