@@ -2,7 +2,7 @@ FROM node:16-slim as node-builder
 
 COPY . ./app
 RUN cd /app
-RUN npm ci && npm run prod
+RUN npm install && npm run prod
 
 FROM php:8.1.5-apache
 
