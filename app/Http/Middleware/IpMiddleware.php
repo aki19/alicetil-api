@@ -21,22 +21,15 @@ class IpMiddleware {
 
         $request::setTrustedProxies(array($request->ip()), $request::HEADER_X_FORWARDED_ALL);
 
-        echo "check ip " . $request->ip() . PHP_EOL;
-        echo "check HTTP_X_FORWARDED_FOR " . $request->server('HTTP_X_FORWARDED_FOR') . PHP_EOL;
-
         $ip = $request->ip();
         if ($request->server('HTTP_X_FORWARDED_FOR')) {
             $ips = explode(",", $request->server('HTTP_X_FORWARDED_FOR'));
             $ip  = $ips[0];
         }
 
-        echo "check ip " . $ip . PHP_EOL;
-
         if (!IpUtils::checkIp($ip, explode(",", env("WHITE_LIST", "")))) {
             throw new AccessDeniedHttpException('IPNotAllowed');
         }
-
-        echo "ip ok".PHP_EOL;
 
         return $next($request);
     }
