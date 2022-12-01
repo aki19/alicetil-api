@@ -22,11 +22,11 @@ class IpMiddleware {
         $request::setTrustedProxies(array($request->ip()), $request::HEADER_X_FORWARDED_ALL);
 
         echo "check ip " . $request->ip() . PHP_EOL;
-        echo "check HTTP_X_FORWARDED_FOR " . $request->header('HTTP_X_FORWARDED_FOR') . PHP_EOL;
+        echo "check HTTP_X_FORWARDED_FOR " . $request->server('HTTP_X_FORWARDED_FOR') . PHP_EOL;
 
         $ip = $request->ip();
-        if ($request->header('HTTP_X_FORWARDED_FOR')) {
-            $ips = explode(",", $request->header('HTTP_X_FORWARDED_FOR'));
+        if ($request->server('HTTP_X_FORWARDED_FOR')) {
+            $ips = explode(",", $request->server('HTTP_X_FORWARDED_FOR'));
             $ip  = $ips[0];
         }
 
