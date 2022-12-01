@@ -13,4 +13,4 @@ echo "composer dump..."
 composer dump-autoload -o --working-dir=/var/www/html
 
 echo "Running migrations..."
-php artisan migrate --force
+#php artisan migrate --force
