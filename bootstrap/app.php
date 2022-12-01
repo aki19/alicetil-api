@@ -4,6 +4,9 @@ require_once __DIR__.'/const.php';
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+echo "bootstrap app...";
+echo __DIR__;
+
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
