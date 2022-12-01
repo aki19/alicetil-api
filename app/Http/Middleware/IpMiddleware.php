@@ -22,8 +22,9 @@ class IpMiddleware {
         $request::setTrustedProxies(array($request->ip()), $request::HEADER_X_FORWARDED_ALL);
 
         echo "check ip ".$request->ip().PHP_EOL;
+        echo "check c-ip ".$request->getClientIp().PHP_EOL;
 
-        if (!IpUtils::checkIp($request->ip(), explode(",", env("WHITE_LIST", "")))) {
+        if (!IpUtils::checkIp($request->getClientIp(), explode(",", env("WHITE_LIST", "")))) {
             throw new AccessDeniedHttpException('IPNotAllowed');
         }
 
