@@ -4,19 +4,6 @@ require_once __DIR__.'/const.php';
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-echo "check file1...".PHP_EOL;
-if(file_exists(__DIR__.'/../vendor/laravel/lumen-framework/composer.json')){
-    echo "exist".PHP_EOL;
-} else {
-    echo "no".PHP_EOL;
-}
-echo "check file2...".PHP_EOL;
-if(class_exists("LoadEnvironmentVariables")){
-    echo "exist".PHP_EOL;
-} else {
-    echo "no".PHP_EOL;
-}
-
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
