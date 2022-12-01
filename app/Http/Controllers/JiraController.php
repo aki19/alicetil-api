@@ -17,6 +17,8 @@ class JiraController extends Controller {
     }
 
     public function get_sprint_list(Request $request) {
+        echo "get_sprint_list".PHP_EOL;
+
         $json_list = array();
 
         $state = "active,future";
