@@ -9,5 +9,8 @@ echo "Caching config..."
 echo "Caching routes..."
 #php artisan route:cache
 
+echo "composer dump..."
+composer dump-autoload
+
 echo "Running migrations..."
 php artisan migrate --force
