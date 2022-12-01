@@ -20,6 +20,10 @@ class IpMiddleware {
         }
 
         $request::setTrustedProxies(array($request->ip()), $request::HEADER_X_FORWARDED_ALL);
+
+        echo "check".PHP_EOL;
+        echo env("WHITE_LIST");
+
         if (!IpUtils::checkIp($request->ip(), explode(",", env("WHITE_LIST", "")))) {
             throw new AccessDeniedHttpException('IPNotAllowed');
         }
