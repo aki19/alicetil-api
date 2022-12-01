@@ -5,13 +5,13 @@ require_once __DIR__.'/const.php';
 require_once __DIR__.'/../vendor/autoload.php';
 
 echo "check file1...".PHP_EOL;
-if(file_exists(__DIR__.'/../vendor/autoload.php')){
+if(file_exists(__DIR__.'/../vendor/laravel/lumen-framework/composer.json')){
     echo "exist".PHP_EOL;
 } else {
     echo "no".PHP_EOL;
 }
 echo "check file2...".PHP_EOL;
-if(file_exists(__DIR__.'/../vendor/composer/autoload_real.php')){
+if(class_exists("LoadEnvironmentVariables")){
     echo "exist".PHP_EOL;
 } else {
     echo "no".PHP_EOL;
